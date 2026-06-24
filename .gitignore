@@ -1,0 +1,16 @@
+# Corpus data (not redistributable — download from voynich.nu)
+ZL_ivtff_2b.txt
+*.ivtff
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
