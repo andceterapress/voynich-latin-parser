@@ -1,12 +1,14 @@
-# Voynich Manuscript — v21 Parser & Dictionary
+# Voynich Manuscript — v22 Strict Validation Parser
 
 **Hypothesis:** The Voynich Manuscript (Beinecke MS 408, ca. 1404–1438) is a compressed Latin botanical-medical reference text from the Padua region, encoding plant anatomy and pharmaceutical prescriptions through abbreviated Latin roots with preserved grammar suffixes.
 
-**Interpretation rate (v21):** 98.7% of 31,007 tokens across all six manuscript sections  
-**Statistical validation:** Permutation test z = 7.3σ, p < 0.001 (n = 1,000 random root sets)  
+**Strict full-token interpretation rate:** 51.11% of 31,007 tokens across all six manuscript sections  
+**Legacy substring interpretation rate:** 98.66% of 31,007 tokens, reproducing the original v21 claim  
 **External cross-validation:** Marci alphabet table (f1r multispectral imaging, Davis 2024)
 
 > ⚠️ This is a research hypothesis, not a confirmed decipherment. All code and data are provided for independent verification.
+>
+> **Important validation update:** the original v21 98.7% figure counts partial substring matches as interpreted. In the default strict mode introduced here, an EVA token must be fully consumed as `optional prefix + root + optional suffix`. Under that rule, corpus coverage is 51.11%.
 
 ---
 
@@ -22,13 +24,22 @@ python examples/translate_sample.py
 # Run unit tests
 python tests/test_parser.py
 
-# Full corpus analysis (requires ZL transcription file)
+# Full corpus analysis in strict mode (requires ZL transcription file)
 python src/analyze.py --input ZL_ivtff_2b.txt
+
+# Compare strict mode with the original v21 legacy substring behavior
+python src/analyze.py --input ZL_ivtff_2b.txt --compare-modes
 
 # Translate a single folio
 python src/analyze.py --input ZL_ivtff_2b.txt --folio f112r
 
-# Permutation test (takes ~30 seconds)
+# Reproduce the original v21 substring-based rate
+python src/analyze.py --input ZL_ivtff_2b.txt --mode legacy
+
+# Run validation checks after dictionary freeze
+python scripts/validate_claims.py --input ZL_ivtff_2b.txt --mode strict
+
+# Permutation test
 python src/analyze.py --input ZL_ivtff_2b.txt --permutation 1000
 ```
 
@@ -45,12 +56,14 @@ Download from: [voynich.nu](https://www.voynich.nu/transcr.html) — look for th
 ## Repository structure
 
 ```
-voynich-v21/
+voynich-latin-parser/
 ├── src/
-│   ├── parser.py        # v21 root dictionary + EVA parser
+│   ├── parser.py        # root dictionary + strict/legacy EVA parser
 │   └── analyze.py       # corpus-level statistics and permutation test
 ├── examples/
 │   └── translate_sample.py   # benchmark translation examples
+├── scripts/
+│   └── validate_claims.py    # blind holdout + botanical ranking checks
 ├── tests/
 │   └── test_parser.py   # unit tests (parser + Marci cross-validation)
 ├── docs/
@@ -62,7 +75,12 @@ voynich-v21/
 
 ## The v21 dictionary
 
-The parser maps EVA (Extended Voynich Alphabet) strings to Latin botanical terms via three mechanisms:
+The parser maps EVA (Extended Voynich Alphabet) strings to Latin botanical terms via three mechanisms. Two parse modes are available:
+
+- `strict` (default): a token must be fully consumed as `optional prefix + root + optional suffix`.
+- `legacy`: reproduces the original v21 behavior by allowing a root to match any substring inside the remaining token.
+
+The strict mode is intended for falsification and validation. The legacy mode is retained only for reproducing the originally published 98.7% result.
 
 ### 1. Root matching (68 roots)
 
@@ -108,9 +126,9 @@ See `src/parser.py` for the complete dictionary.
 
 ---
 
-## Word-order rules (v20, statistically validated)
+## Word-order rules
 
-Three rules were inductively derived from the plant section (f1–f66) and validated across all sections:
+The original paper proposed three word-order rules derived from the plant section (f1–f66). In this validation branch, independent checks are reported separately from the original claim:
 
 **Rule 1 — Optional verb-initial marker (3.8% of prescription lines)**  
 `k [BARK] [WOOD] ... am`  
@@ -157,18 +175,31 @@ Note:  shey at position 0.29 (front) + chom at 0.86 (back) — both obey Rule 3.
 
 ## Statistical validation
 
+### Mode comparison
+
+Run:
+
+```bash
+python src/analyze.py --input ZL_ivtff_2b.txt --compare-modes
+```
+
+Result:
+
+| Mode | Hits | Tokens | Rate | Meaning |
+|---|---:|---:|---:|---|
+| Strict | 15,848 | 31,007 | 51.11% | Full-token parsing only |
+| Legacy | 30,590 | 31,007 | 98.66% | Original substring fallback behavior |
+
 ### Permutation test
 
-To rule out circular reasoning ("any root set achieves high rates"), 1,000 random root sets of the same size were tested:
+The original v21 permutation test is reproducible in legacy mode. Under strict mode, the v21 root set remains non-random relative to random root sets, but coverage is much lower:
 
-| | v21 | Random mean | Random max |
-|---|---|---|---|
-| Full parser | **98.7%** | 33.5% | 79.8% |
-| Roots only (no affixes) | **98.6%** | 10.6% | — |
-| z-score | **7.3σ** | — | — |
-| p-value | **< 0.001** | — | — |
+| Metric | Strict mode | Legacy mode |
+|---|---:|---:|
+| Corpus interpretation rate | 51.11% | 98.66% |
+| Interpretation criterion | Full token | Partial substring allowed |
 
-Random trials reaching v21 level: **0 / 1,000**
+The legacy 98.7% figure should therefore not be described as full-token interpretation.
 
 ### External cross-validation: Marci alphabet table
 
@@ -189,21 +220,22 @@ Lisa Fagin Davis (2024) published multispectral images of folio f1r revealing a 
 | v14 | 65.9% | 4-level recursive parser |
 | v19 | 82.1% | Emphasis prefix `e-` |
 | v20 | 95.6% | Word-order rules + ZL transcription |
-| **v21** | **98.7%** | `air`/`aiir` bug fix + single-char function words + Marci cross-validation |
+| v21 | 98.7% legacy | `air`/`aiir` bug fix + single-char function words + Marci cross-validation |
+| **v22 strict validation** | **51.11% strict / 98.66% legacy** | Removes substring fallback from default parser; adds validation scripts |
 
 ---
 
-## Section results (v21)
+## Section results (strict mode)
 
 | Section | Folios | Tokens | Rate |
 |---------|--------|--------|------|
-| Herbal | f1–f66 | 11,080 | 97.9% |
-| Astronomical | f70v–f73v | 283 | 98.2% |
-| Biological | f74–f84 | 6,872 | 99.1% |
-| Pharma (roots) | f87–f96v | 984 | 99.3% |
-| Pharma (Rx) | f99–f102 | 906 | 99.2% |
-| Recipes | f103–f116 | 10,882 | 99.1% |
-| **Total** | | **31,007** | **98.7%** |
+| Herbal | f1–f66 | 11,080 | 48.4% |
+| Astronomical | f70v–f73v | 283 | 49.1% |
+| Biological | f74–f84 | 6,872 | 57.7% |
+| Pharma (roots) | f87–f96v | 984 | 45.7% |
+| Pharma (Rx) | f99–f102 | 906 | 57.8% |
+| Recipes | f103–f116 | 10,882 | 49.7% |
+| **Total** | | **31,007** | **51.11%** |
 
 ---
 
