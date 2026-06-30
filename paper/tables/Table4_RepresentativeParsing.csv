@@ -1,0 +1,13 @@
+folio,section,eva_token,prefix,root,suffix,latin_value,interpretation,strict_parsed
+f1r,Botanical,yshey,y,sh,ey,suber,[지시(그-)] + 코르크(suber) + from/at,Yes
+f1r,Botanical,ycheey,y,ch,eey,cortex,[지시(그-)] + 수피(cortex) + of (emphatic),Yes
+f75r,Biological,qoldy,qo,l,dy,il-,[~의(quod/de)] + 관사(il-) + of (de),Yes
+f75r,Biological,lshey,l,sh,ey,suber,[관사(il-)] + 코르크(suber) + from/at,Yes
+f71r,Astronomical,rary,r,ar,y,radius,[역(re-)] + 수선(radius) + adjective,Yes
+f73r,Astronomical,yteey,y,t,eey,tunica,[지시(그-)] + 막/층(tunica) + of (emphatic),Yes
+f87r,Pharmaceutical (Roots),ykeey,y,k,eey,coquitur,[지시(그-)] + 달임(coquitur) + of (emphatic),Yes
+f87r,Pharmaceutical (Roots),pcheos,p,ch,eos,cortex,[위해(pro)] + 수피(cortex) + seasonal plural,Yes
+f99r,Pharmaceutical (Recipes),pcheody,p,cheo,dy,cortex,[위해(pro)] + 수피(cortex) + of (de),Yes
+f99r,Pharmaceutical (Recipes),qokeeor,qo,k,eeor,coquitur,[~의(quod/de)] + 달임(coquitur) + +aureus (emphatic),Yes
+f103r,Recipes,qoteey,qo,t,eey,tunica,[~의(quod/de)] + 막/층(tunica) + of (emphatic),Yes
+f103r,Recipes,opchedy,op,ch,edy,cortex,[대향(contra)] + 수피(cortex) + through (per),Yes

@@ -41,6 +41,9 @@ python scripts/validate_claims.py --input ZL_ivtff_2b.txt --mode strict
 
 # Official strict permutation test
 python src/analyze.py --input ZL_ivtff_2b.txt --mode strict --permutation 10000
+
+# Export reproducible paper tables and supplementary files
+python src/analyze.py --export-paper-data
 ```
 
 ---
@@ -64,6 +67,9 @@ voynich-latin-parser/
 │   └── translate_sample.py   # benchmark translation examples
 ├── scripts/
 │   └── validate_claims.py    # blind holdout + botanical ranking checks
+├── paper/
+│   ├── tables/               # reproducible paper tables
+│   └── supplementary/        # token-level supplementary parser outputs
 ├── tests/
 │   └── test_parser.py   # unit tests (parser + Marci cross-validation)
 ├── docs/
@@ -218,6 +224,31 @@ Result:
 | Empirical p | < 0.0001 |
 
 The older 98.7% figure should therefore be described as exploratory/legacy recognition coverage, not full-token parsing.
+
+### Reproducible paper data export
+
+Run:
+
+```bash
+python src/analyze.py --export-paper-data
+```
+
+This regenerates the following files from the current v22 parser and the ZL transcription:
+
+| File | Description |
+|---|---|
+| `paper/tables/Table1_CorpusPerformance.csv` | Total tokens, exploratory recognition, strict validation, and unresolved-token counts |
+| `paper/tables/Table2_SectionConsistency.csv` | Section-level strict parsing counts and percentages |
+| `paper/tables/Table3_PermutationStatistics.csv` | Official 10,000-trial strict permutation statistics |
+| `paper/tables/Table4_RepresentativeParsing.csv` | Deterministically selected successful strict parses from actual parser output |
+| `paper/tables/Table5_LexicalStability.csv` | Representative fixed root-to-Latin lexical assignments |
+| `paper/tables/Table6_FailureCases.csv` | Representative unresolved strict-validation tokens |
+| `paper/supplementary/Supplementary_S1_SectionStatistics.csv` | Full section statistics |
+| `paper/supplementary/Supplementary_S2_FullParserOutput.csv` | Token-level parser output for all 31,007 evaluated tokens |
+| `paper/supplementary/Supplementary_S3_LexicalStability.csv` | Full lexical stability table |
+| `paper/supplementary/Supplementary_S4_FailureCases.csv` | All strict-validation failure cases |
+| `paper/supplementary/results.json` | Machine-readable v22 summary and permutation result |
+| `paper/supplementary/README.md` | Supplementary file guide |
 
 ### External cross-validation: Marci alphabet table
 

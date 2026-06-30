@@ -1,0 +1,5 @@
+metric,count,percentage
+Total tokens,31007,100.00
+Exploratory Recognition,30590,98.66
+Strict Full-Token Validation,15848,51.11
+Unresolved tokens,15159,48.89
