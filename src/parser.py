@@ -154,19 +154,29 @@ def clean_word(word: str) -> str:
     return re.sub(r"[^a-z]", "", word.lower())
 
 
-def parse(word: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def parse(word: str, mode: str = "strict") -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Parse an EVA word into (prefix, root, suffix).
 
-    Priority rules (v21):
+    Strict mode requires the full cleaned word to be consumed by the grammar:
+      [optional prefix] + root + [optional suffix]
+
+    Legacy mode reproduces the v21 paper/code behavior by falling back to a
+    root substring search after prefix/suffix checks. Use it only for comparing
+    against published 98.7% figures.
+
+    Priority rules:
       1. Single-character words and exact ROOTS matches → direct lookup
       2. Prefix stripping (qo > op > r > l > p > y)
       3. Suffix matching (longest first, only if remaining stem is in ROOTS)
-      4. Root substring search (longest match first, 8→1 chars)
+      4. Legacy only: root substring search (longest match first, 8→1 chars)
 
     Returns:
       (prefix, root, suffix) — any component may be None if not found.
     """
+    if mode not in ("strict", "legacy"):
+        raise ValueError("mode must be 'strict' or 'legacy'")
+
     w = word
 
     # Rule 1: direct match (handles single-char function words and aiir/air)
@@ -193,7 +203,13 @@ def parse(word: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
                 w = candidate
                 break
 
-    # Rule 4: root substring (longest match)
+    if w in ROOTS:
+        return prefix, w, suffix
+
+    if mode == "strict":
+        return None, None, None
+
+    # Rule 4: legacy root substring fallback (longest match).
     for length in range(min(8, len(w)), 0, -1):
         for start in range(len(w) - length + 1):
             sub = w[start : start + length]
@@ -206,7 +222,7 @@ def parse(word: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     return prefix, root, suffix
 
 
-def interpret(word: str) -> Optional[str]:
+def interpret(word: str, mode: str = "strict") -> Optional[str]:
     """
     Return a human-readable gloss for an EVA word, or None if unknown.
 
@@ -217,7 +233,7 @@ def interpret(word: str) -> Optional[str]:
     if not w:
         return None
 
-    prefix, root, suffix = parse(w)
+    prefix, root, suffix = parse(w, mode=mode)
     parts = []
 
     if prefix:
@@ -237,16 +253,16 @@ def interpret(word: str) -> Optional[str]:
     return " + ".join(parts) if parts else None
 
 
-def is_known(word: str) -> bool:
-    """Return True if the word can be at least partially interpreted."""
+def is_known(word: str, mode: str = "strict") -> bool:
+    """Return True if the word can be interpreted under the selected mode."""
     w = clean_word(word)
     if not w:
         return False
-    prefix, root, suffix = parse(w)
+    prefix, root, suffix = parse(w, mode=mode)
     return bool(prefix or root or suffix)
 
 
-def parse_line(zl_line: str):
+def parse_line(zl_line: str, mode: str = "strict"):
     """
     Parse a single ZL transcription line.
 
@@ -268,7 +284,7 @@ def parse_line(zl_line: str):
     for raw in raw_words:
         cleaned = clean_word(raw)
         if cleaned:
-            interp = interpret(cleaned)
+            interp = interpret(cleaned, mode=mode)
             results.append({
                 "raw":    raw.strip(),
                 "clean":  cleaned,

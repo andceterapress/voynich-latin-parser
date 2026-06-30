@@ -13,8 +13,8 @@ from parser import clean_word, parse, interpret, is_known, ROOTS
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def check(word, expected_root=None, expected_prefix=None, expected_suffix=None,
-          expect_known=True):
-    pfx, root, sfx = parse(clean_word(word))
+          expect_known=True, mode="strict"):
+    pfx, root, sfx = parse(clean_word(word), mode=mode)
     ok = True
     msgs = []
     if expected_root is not None and root != expected_root:
@@ -26,8 +26,12 @@ def check(word, expected_root=None, expected_prefix=None, expected_suffix=None,
     if expected_suffix is not None and sfx != expected_suffix:
         msgs.append(f"suffix: got {sfx!r}, expected {expected_suffix!r}")
         ok = False
-    if expect_known and not is_known(clean_word(word)):
+    known = is_known(clean_word(word), mode=mode)
+    if expect_known and not known:
         msgs.append("expected known but got unknown")
+        ok = False
+    if not expect_known and known:
+        msgs.append("expected unknown but got known")
         ok = False
     return ok, f"{word}: " + "; ".join(msgs) if msgs else f"{word}: OK"
 
@@ -56,19 +60,19 @@ TESTS = [
     ("r",       "r",      None,  None,  True),
     ("d",       "d",      None,  None,  True),
 
-    # Prefix stripping
-    ("qockhol", None,     "qo",  None,  True),   # qo + ok + hol substring
-    ("opchedy", None,     "op",  None,  True),
-    ("ycheeo",  None,     "y",   None,  True),
-    ("pchedy",  None,     "p",   None,  True),
+    # Prefix stripping. Strict mode requires the remaining stem to be fully consumed.
+    ("qochol",  "chol",   "qo",  None,  True),
+    ("opchedy", "ch",     "op",  "edy", True),
+    ("ycheol",  "ch",     "y",   "eol", True),
+    ("pchedy",  "ch",     "p",   "edy", True),
 
     # Suffix matching
     ("chedy",   "ch",     None,  "edy", True),   # cortex + through
     ("sheody",  "she",    None,  "ody", True),   # suber? + -ward (longest root match)
-    ("darindy", "dar",    None,  None,  True),   # dar (heartwood) found as substring
+    ("darindy", None,     None,  None,  False),  # legacy-only substring match
 
     # Compound prefix + suffix (suffix needs exact stem match after prefix)
-    ("qokcheol", "cheol", "qo",  None,  True),  # qo + cheol (longest root match)
+    ("qocheol", "ch",    "qo",  "eol", True),
 
     # Grammar words
     ("am",   "am",    None,  None,  True),
@@ -93,7 +97,7 @@ TESTS = [
 
     # f5v — Malva (mallow) benchmark: cthor should appear
     ("dain",   "dain",  None, None,  True),
-    ("otaiin", "aiin",  None, None,  True),  # aiin found as longest root match
+    ("otaiin", None,    None, None,  False),  # legacy-only substring match
 
     # Unknown words (should not be known)
     ("xyz",    None, None, None, False),
@@ -122,6 +126,23 @@ def run_tests():
 
     print(f"\n  Results: {passed} passed, {failed} failed / {len(TESTS)} total")
     return failed == 0
+
+
+def test_legacy_substring_fallback():
+    """Published v21 rates depend on these legacy-only partial matches."""
+    legacy_only = [
+        ("qockhol", "qo"),
+        ("otaiin", None),
+        ("ychopordg", "y"),
+        ("darindy", None),
+    ]
+    for word, expected_prefix in legacy_only:
+        assert not is_known(word), f"{word} should be unknown in strict mode"
+        pfx, root, sfx = parse(word, mode="legacy")
+        assert root is not None, f"{word} should have a legacy substring root"
+        if expected_prefix is not None:
+            assert pfx == expected_prefix
+    print(f"  [PASS] legacy substring fallback documented ({len(legacy_only)} words)")
 
 
 # ── Specific validation: f112r.10 full line ───────────────────────────────────
@@ -171,6 +192,7 @@ if __name__ == "__main__":
     print("Voynich v21 Parser — Unit Tests\n")
     ok = run_tests()
     print()
+    test_legacy_substring_fallback()
     test_f112r_10()
     test_marci_direct_correspondences()
     sys.exit(0 if ok else 1)
