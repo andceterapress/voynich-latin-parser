@@ -2,13 +2,13 @@
 
 **Hypothesis:** The Voynich Manuscript (Beinecke MS 408, ca. 1404–1438) is a compressed Latin botanical-medical reference text from the Padua region, encoding plant anatomy and pharmaceutical prescriptions through abbreviated Latin roots with preserved grammar suffixes.
 
-**Strict full-token interpretation rate:** 51.11% of 31,007 tokens across all six manuscript sections  
-**Legacy substring interpretation rate:** 98.66% of 31,007 tokens, reproducing the original v21 claim  
+**Strict Full-Token Validation Mode:** 51.11% of 31,007 tokens across all six manuscript sections  
+**Exploratory Recognition Mode:** 98.66% of 31,007 tokens, reproducing the original v21 legacy claim  
 **External cross-validation:** Marci alphabet table (f1r multispectral imaging, Davis 2024)
 
 > ⚠️ This is a research hypothesis, not a confirmed decipherment. All code and data are provided for independent verification.
 >
-> **Important validation update:** the original v21 98.7% figure counts partial substring matches as interpreted. In the default strict mode introduced here, an EVA token must be fully consumed as `optional prefix + root + optional suffix`. Under that rule, corpus coverage is 51.11%.
+> **Important validation update:** the original v21 98.7% figure counts exploratory partial substring matches as interpreted. In the default Strict Full-Token Validation Mode introduced here, an EVA token must be fully consumed as `optional prefix + root + optional suffix`. Under that primary validation criterion, corpus coverage is 51.11%.
 
 ---
 
@@ -27,20 +27,20 @@ python tests/test_parser.py
 # Full corpus analysis in strict mode (requires ZL transcription file)
 python src/analyze.py --input ZL_ivtff_2b.txt
 
-# Compare strict mode with the original v21 legacy substring behavior
+# Compare Strict Full-Token Validation Mode with Exploratory Recognition Mode
 python src/analyze.py --input ZL_ivtff_2b.txt --compare-modes
 
 # Translate a single folio
 python src/analyze.py --input ZL_ivtff_2b.txt --folio f112r
 
-# Reproduce the original v21 substring-based rate
+# Reproduce the original v21 exploratory substring-based rate
 python src/analyze.py --input ZL_ivtff_2b.txt --mode legacy
 
 # Run validation checks after dictionary freeze
 python scripts/validate_claims.py --input ZL_ivtff_2b.txt --mode strict
 
-# Permutation test
-python src/analyze.py --input ZL_ivtff_2b.txt --permutation 1000
+# Official strict permutation test
+python src/analyze.py --input ZL_ivtff_2b.txt --mode strict --permutation 10000
 ```
 
 ---
@@ -77,10 +77,14 @@ voynich-latin-parser/
 
 The parser maps EVA (Extended Voynich Alphabet) strings to Latin botanical terms via three mechanisms. Two parse modes are available:
 
-- `strict` (default): a token must be fully consumed as `optional prefix + root + optional suffix`.
-- `legacy`: reproduces the original v21 behavior by allowing a root to match any substring inside the remaining token.
+- `strict` (default): Strict Full-Token Validation Mode. A token must be fully consumed as `optional prefix + root + optional suffix`.
+- `legacy`: Exploratory Recognition Mode. Reproduces the original v21 behavior by allowing a root to match any substring inside the remaining token.
 
-The strict mode is intended for falsification and validation. The legacy mode is retained only for reproducing the originally published 98.7% result.
+Strict Full-Token Validation Mode is the primary validation criterion. Exploratory Recognition Mode is retained only for reproducing the originally published 98.7% result.
+
+### Experimental compound candidates
+
+Compound morpheme rules such as `ok/ot/ch/sh + root` are promising experimental candidates because many currently unparsed tokens appear to contain recurring structural pieces. They are **not** merged into the main v22 parser yet. Broad two-root compounding is intentionally not adopted here because it risks reintroducing overfitting and inflating recognition rates.
 
 ### 1. Root matching (68 roots)
 
@@ -187,19 +191,33 @@ Result:
 
 | Mode | Hits | Tokens | Rate | Meaning |
 |---|---:|---:|---:|---|
-| Strict | 15,848 | 31,007 | 51.11% | Full-token parsing only |
-| Legacy | 30,590 | 31,007 | 98.66% | Original substring fallback behavior |
+| Strict Full-Token Validation | 15,848 | 31,007 | 51.11% | Primary validation criterion |
+| Exploratory Recognition | 30,590 | 31,007 | 98.66% | Original v21 substring fallback behavior |
 
 ### Permutation test
 
-The original v21 permutation test is reproducible in legacy mode. Under strict mode, the v21 root set remains non-random relative to random root sets, but coverage is much lower:
+The original v21 permutation test is reproducible in Exploratory Recognition Mode. In v22, the official permutation test uses the same Strict Full-Token Validation criterion as the production strict parser.
 
-| Metric | Strict mode | Legacy mode |
-|---|---:|---:|
-| Corpus interpretation rate | 51.11% | 98.66% |
-| Interpretation criterion | Full token | Partial substring allowed |
+Run:
 
-The legacy 98.7% figure should therefore not be described as full-token interpretation.
+```bash
+python src/analyze.py --input ZL_ivtff_2b.txt --mode strict --permutation 10000
+```
+
+Result:
+
+| Metric | Strict permutation result |
+|---|---:|
+| Random trials | 10,000 |
+| Observed strict rate | 51.111% |
+| Null mean | 2.112% |
+| Null std | 1.629 percentage points |
+| Null max | 15.900% |
+| z-score | 30.07σ |
+| Trials >= observed | 0 / 10,000 |
+| Empirical p | < 0.0001 |
+
+The older 98.7% figure should therefore be described as exploratory/legacy recognition coverage, not full-token parsing.
 
 ### External cross-validation: Marci alphabet table
 
