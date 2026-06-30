@@ -469,6 +469,91 @@ def one_char_root_ablation(input_path):
     print("  wrote: paper/supplementary/Supplementary_S5_OneCharacterRootAblation.json")
 
 
+def short_root_ablation(input_path):
+    """Run diagnostic ablation removing one- and two-character ROOT entries."""
+    lines = load_corpus(input_path)
+    all_words = list(corpus_words(lines))
+    total = len(all_words)
+
+    all_roots = set(ROOTS.keys())
+    removed_one_char = sorted(root for root in ROOTS if len(root) == 1)
+    removed_two_char = sorted(root for root in ROOTS if len(root) == 2)
+    one_char_roots = {root for root in ROOTS if len(root) != 1}
+    one_two_char_roots = {root for root in ROOTS if len(root) > 2}
+
+    baseline_count = strict_count_with_roots(all_words, all_roots)
+    one_char_count = strict_count_with_roots(all_words, one_char_roots)
+    one_two_char_count = strict_count_with_roots(all_words, one_two_char_roots)
+
+    baseline_pct = pct(baseline_count, total)
+    one_char_pct = pct(one_char_count, total)
+    one_two_char_pct = pct(one_two_char_count, total)
+    absolute_drop = round(baseline_pct - one_two_char_pct, 2)
+    relative_drop = round((baseline_count - one_two_char_count) / baseline_count * 100, 2) if baseline_count else 0.0
+
+    expected = (31007, 15848, 51.11, 12038, 38.82)
+    actual = (total, baseline_count, baseline_pct, one_char_count, one_char_pct)
+    if actual != expected:
+        raise ValueError(f"Unexpected ablation baseline: got {actual}, expected {expected}")
+
+    rows = [
+        {"metric": "Total tokens", "value": str(total)},
+        {"metric": "Baseline strict parsed", "value": str(baseline_count)},
+        {"metric": "Baseline strict %", "value": f"{baseline_pct:.2f}"},
+        {"metric": "One-character ablation parsed", "value": str(one_char_count)},
+        {"metric": "One-character ablation %", "value": f"{one_char_pct:.2f}"},
+        {"metric": "One-two-character ablation parsed", "value": str(one_two_char_count)},
+        {"metric": "One-two-character ablation %", "value": f"{one_two_char_pct:.2f}"},
+        {"metric": "Absolute percentage-point drop", "value": f"{absolute_drop:.2f}"},
+        {"metric": "Relative drop %", "value": f"{relative_drop:.2f}"},
+        {"metric": "Removed one-character roots", "value": "; ".join(removed_one_char)},
+        {"metric": "Removed two-character roots", "value": "; ".join(removed_two_char)},
+    ]
+
+    tables_dir = Path("paper/tables")
+    supp_dir = Path("paper/supplementary")
+    write_csv(tables_dir / "Table8_ShortRootAblation.csv", ["metric", "value"], rows)
+
+    supp_dir.mkdir(parents=True, exist_ok=True)
+    result = {
+        "parser_version": "v22",
+        "ablation": "one_two_character_roots_removed",
+        "baseline": {
+            "strict_count": baseline_count,
+            "strict_percentage": baseline_pct,
+        },
+        "one_character_ablation": {
+            "strict_count": one_char_count,
+            "strict_percentage": one_char_pct,
+        },
+        "one_two_character_ablation": {
+            "strict_count": one_two_char_count,
+            "strict_percentage": one_two_char_pct,
+            "absolute_percentage_point_drop": absolute_drop,
+            "relative_drop_percent": relative_drop,
+        },
+        "removed_one_character_roots": removed_one_char,
+        "removed_two_character_roots": removed_two_char,
+    }
+    with open(supp_dir / "Supplementary_S6_ShortRootAblation.json", "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+
+    print("Short ROOT ablation (length <= 2 removed)")
+    print(f"  total_tokens: {total}")
+    print(f"  baseline_strict_count: {baseline_count}")
+    print(f"  baseline_strict_percentage: {baseline_pct:.2f}%")
+    print(f"  one_char_removed_count: {one_char_count}")
+    print(f"  one_char_removed_percentage: {one_char_pct:.2f}%")
+    print(f"  one_two_char_removed_count: {one_two_char_count}")
+    print(f"  one_two_char_removed_percentage: {one_two_char_pct:.2f}%")
+    print(f"  absolute_drop_vs_baseline: {absolute_drop:.2f}")
+    print(f"  relative_drop_vs_baseline: {relative_drop:.2f}%")
+    print(f"  removed_one_char_roots: {', '.join(removed_one_char)}")
+    print(f"  removed_two_char_roots: {', '.join(removed_two_char)}")
+    print("  wrote: paper/tables/Table8_ShortRootAblation.csv")
+    print("  wrote: paper/supplementary/Supplementary_S6_ShortRootAblation.json")
+
+
 def export_paper_data(input_path):
     """Generate reproducible paper tables and supplementary data."""
     lines = load_corpus(input_path)
@@ -620,7 +705,16 @@ def main():
                     help="export reproducible paper tables and supplementary data")
     ap.add_argument("--ablate-one-char-roots", action="store_true",
                     help="diagnose strict coverage after temporarily removing one-character ROOT entries")
+    ap.add_argument("--ablate-short-roots", action="store_true",
+                    help="diagnose strict coverage after temporarily removing one- and two-character ROOT entries")
     args = ap.parse_args()
+
+    if args.ablate_short_roots:
+        input_path = args.input or find_default_corpus_path()
+        if not input_path:
+            ap.error("--ablate-short-roots requires --input or a local ZL_ivtff_2b.txt file")
+        short_root_ablation(input_path)
+        return
 
     if args.ablate_one_char_roots:
         input_path = args.input or find_default_corpus_path()
@@ -637,7 +731,7 @@ def main():
         return
 
     if not args.input:
-        ap.error("--input is required unless --export-paper-data or --ablate-one-char-roots is used")
+        ap.error("--input is required unless an export or ablation mode is used")
 
     print(f"Loading corpus: {args.input}")
     lines = load_corpus(args.input)
