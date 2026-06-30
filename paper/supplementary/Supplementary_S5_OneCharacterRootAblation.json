@@ -1,0 +1,25 @@
+{
+  "parser_version": "v22",
+  "ablation": "one_character_roots_removed",
+  "total_tokens": 31007,
+  "baseline": {
+    "strict_count": 15848,
+    "strict_percentage": 51.11
+  },
+  "ablated": {
+    "strict_count": 12038,
+    "strict_percentage": 38.82
+  },
+  "absolute_percentage_point_drop": 12.29,
+  "relative_drop_percent": 24.04,
+  "removed_one_character_roots": [
+    "d",
+    "k",
+    "l",
+    "o",
+    "p",
+    "r",
+    "s",
+    "t"
+  ]
+}

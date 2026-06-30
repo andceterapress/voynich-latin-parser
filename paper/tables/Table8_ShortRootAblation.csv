@@ -1,0 +1,12 @@
+metric,value
+Total tokens,31007
+Baseline strict parsed,15848
+Baseline strict %,51.11
+One-character ablation parsed,12038
+One-character ablation %,38.82
+One-two-character ablation parsed,6317
+One-two-character ablation %,20.37
+Absolute percentage-point drop,30.74
+Relative drop %,60.14
+Removed one-character roots,d; k; l; o; p; r; s; t
+Removed two-character roots,al; am; ar; ch; dy; ee; od; ok; ol; om; or; ot; sh

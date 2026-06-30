@@ -1,16 +1,16 @@
-root,latin_value,interpretation,occurrence_count,section_count,sections,context_specific_reassignment
-ch,cortex,bark/cortex,2056,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-k,coquitur,decoction/processing,1884,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-sh,suber,cork/suber,1023,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-daiin,duramen,heartwood,747,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-t,tunica,membrane/layer,669,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-ol,lignum,wood/lignum,649,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-ok,exterior,outer layer,608,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-ot,exterior,surface,596,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-aiin,annulus,growth ring,508,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-or,aureus,golden/yellow,394,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-chol,cortex,bark/cortex,383,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-ar,radius,medullary ray,377,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-l,il-,article il- [standalone],334,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-o,aut,or/aut  [standalone only; prefix o- = exterior],320,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
-s,est,is/est,319,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+lexical_family,variant,latin_value,interpretation,occurrence_count,section_count,sections,context_specific_reassignment
+cortex,ch,cortex,bark/cortex,2056,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+coquitur,k,coquitur,decoction/processing,1884,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+suber,sh,suber,cork/suber,1023,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+duramen,daiin,duramen,heartwood,747,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+tunica,t,tunica,membrane/layer,669,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+lignum,ol,lignum,wood/lignum,649,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+exterior,ok,exterior,outer layer,608,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+exterior,ot,exterior,surface,596,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+annulus,aiin,annulus,growth ring,508,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+aureus,or,aureus,golden/yellow,394,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+cortex,chol,cortex,bark/cortex,383,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+radius,ar,radius,medullary ray,377,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+il-,l,il-,article il- [standalone],334,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+aut,o,aut,or/aut  [standalone only; prefix o- = exterior],320,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+est,s,est,is/est,319,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
