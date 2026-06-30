@@ -1,0 +1,69 @@
+root,latin_value,interpretation,occurrence_count,section_count,sections,context_specific_reassignment
+ch,cortex,bark/cortex,2056,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+k,coquitur,decoction/processing,1884,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sh,suber,cork/suber,1023,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+daiin,duramen,heartwood,747,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+t,tunica,membrane/layer,669,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+ol,lignum,wood/lignum,649,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+ok,exterior,outer layer,608,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+ot,exterior,surface,596,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+aiin,annulus,growth ring,508,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+or,aureus,golden/yellow,394,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+chol,cortex,bark/cortex,383,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+ar,radius,medullary ray,377,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+l,il-,article il- [standalone],334,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+o,aut,or/aut  [standalone only; prefix o- = exterior],320,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+s,est,is/est,319,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+al,alburnum,sapwood/alburnum,297,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dar,duramen,heartwood,275,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dal,medulla,pith/medulla,232,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+shey,humidus,aquatic/moist,230,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dy,de,of/from,229,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+chor,cortex,bark/cortex,222,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dain,duramen,heartwood,198,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+r,re-,reverse/re- [standalone],185,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+shol,suber,cork/suber,169,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+d,de,of/de [standalone],168,4,Biological; Botanical; Pharmaceutical (Recipes); Recipes,No
+cheo,cortex,bark/cortex,149,5,Astronomical; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+cheol,cortex,bark-type,149,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+chy,chylos,juice/chyle (Greek χυλός),147,5,Astronomical; Biological; Botanical; Pharmaceutical (Roots); Recipes,No
+ain,annulus,growth ring,132,4,Biological; Botanical; Pharmaceutical (Roots); Recipes,No
+cho,cortex,bark/cortex,120,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sheey,humidus,aquatic/moist,118,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+cthy,calidus,heat/pungency,100,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+char,spina,spine/thorn,99,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dol,medulla,pith/medulla,97,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+shor,suber,cork/suber,90,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+she,suber?,cork? (uncertain),89,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sheol,suber,cork/suber,87,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+tol,totus,whole/total,87,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+air,aureus,golden/yellow,85,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dair,duramen,heartwood,79,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+am,[verb],[process/treat],78,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+cheor,cortex,bark-type,72,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+ee,et/eius,and/its,70,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+otol,pilus,hair/trichome,68,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+dam,[verb],[process/treat],65,4,Biological; Botanical; Pharmaceutical (Roots); Recipes,No
+dor,odor,scent/odor,63,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sar,saxosus,rocky soil,62,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+okol,exterior,outer layer,59,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sain,succus,sap/juice,58,4,Biological; Botanical; Pharmaceutical (Recipes); Recipes,No
+sol,succus,sap/juice,54,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+okeol,exterior,outer layer,52,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+ckhy,nocumentum,harmfulness,47,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sheo,suber,cork/suber,45,5,Astronomical; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+sal,sanguis,blood-sap,44,6,Astronomical; Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+cthor,phlegma,mucilage/phlegm,42,3,Biological; Botanical; Pharmaceutical (Recipes),No
+sor,succus-,reduced sap,40,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+aiiin,annulus,growth ring (emphatic),35,4,Biological; Botanical; Pharmaceutical (Recipes); Recipes,No
+oteo,exterior (seasonal),outer (seasonal),29,5,Astronomical; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+od,odor,scent/odor,26,5,Biological; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+okeo,exterior (seasonal),outer (seasonal),26,5,Astronomical; Botanical; Pharmaceutical (Recipes); Pharmaceutical (Roots); Recipes,No
+aiir,annulus+radius,ring+ray,25,3,Botanical; Pharmaceutical (Roots); Recipes,No
+om,[verb],[process/treat],25,4,Biological; Botanical; Pharmaceutical (Roots); Recipes,No
+p,pro,for/pro,22,3,Biological; Botanical; Recipes,No
+cthar,durus,hard/dry,16,3,Biological; Botanical; Recipes,No
+chom,umbrosus,shaded,12,2,Botanical; Recipes,No
+oteos,exterior (seasonal),outer surface (seasonal),6,3,Astronomical; Botanical; Recipes,No
+okody,exterior (directional),outer layer (directional),5,3,Astronomical; Botanical; Pharmaceutical (Recipes),No
+okeos,exterior (seasonal),outer layer (seasonal),2,1,Botanical,No

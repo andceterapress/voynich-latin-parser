@@ -1,0 +1,60 @@
+{
+  "parser_version": "v22",
+  "total_tokens": 31007,
+  "exploratory_recognition": {
+    "count": 30590,
+    "percentage": 98.66
+  },
+  "strict_full_token_validation": {
+    "count": 15848,
+    "percentage": 51.11
+  },
+  "permutation_test": {
+    "trials": 10000,
+    "null_mean_percent": 2.112,
+    "null_std_percentage_points": 1.629,
+    "null_max_percent": 15.9,
+    "observed_percent": 51.11,
+    "z_score": 30.07,
+    "trials_greater_equal_observed": 0,
+    "empirical_p": "<0.0001"
+  },
+  "section_statistics": [
+    {
+      "section": "Botanical",
+      "total_tokens": 11080,
+      "strict_parsed": 5363,
+      "strict_percentage": 48.4
+    },
+    {
+      "section": "Biological",
+      "total_tokens": 6872,
+      "strict_parsed": 3964,
+      "strict_percentage": 57.68
+    },
+    {
+      "section": "Astronomical",
+      "total_tokens": 283,
+      "strict_parsed": 139,
+      "strict_percentage": 49.12
+    },
+    {
+      "section": "Pharmaceutical (Roots)",
+      "total_tokens": 984,
+      "strict_parsed": 450,
+      "strict_percentage": 45.73
+    },
+    {
+      "section": "Pharmaceutical (Recipes)",
+      "total_tokens": 906,
+      "strict_parsed": 524,
+      "strict_percentage": 57.84
+    },
+    {
+      "section": "Recipes",
+      "total_tokens": 10882,
+      "strict_parsed": 5408,
+      "strict_percentage": 49.7
+    }
+  ]
+}

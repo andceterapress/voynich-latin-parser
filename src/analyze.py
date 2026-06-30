@@ -9,8 +9,11 @@ Usage:
 
 import re
 import argparse
+import csv
+import json
 import random
 from collections import Counter, defaultdict
+from pathlib import Path
 from parser import clean_word, parse, interpret, is_known, ROOTS, PREFIXES, SUFFIXES
 
 # Section definitions (folio number ranges)
@@ -22,6 +25,24 @@ SECTIONS = {
     "pharma_rx":    (99,  102, "Part-labelled prescriptions"),
     "recipes":      (103, 116, "Dense prescription text (am-terminal lines)"),
 }
+
+PAPER_SECTION_LABELS = {
+    "herbal": "Botanical",
+    "biological": "Biological",
+    "astronomical": "Astronomical",
+    "pharma_roots": "Pharmaceutical (Roots)",
+    "pharma_rx": "Pharmaceutical (Recipes)",
+    "recipes": "Recipes",
+}
+
+PAPER_SECTION_ORDER = [
+    "herbal",
+    "biological",
+    "astronomical",
+    "pharma_roots",
+    "pharma_rx",
+    "recipes",
+]
 
 
 def folio_num(folio: str) -> int:
@@ -179,6 +200,309 @@ def permutation_test(all_words, n_trials=1000, seed=42, mode="strict"):
     return v21_rate, null_dist, z, p
 
 
+def find_default_corpus_path():
+    """Find the ZL transcription when export mode is run without --input."""
+    candidates = [
+        Path("ZL_ivtff_2b.txt"),
+        Path("../ZL_ivtff_2b.txt"),
+        Path("work/ZL_ivtff_2b.txt"),
+    ]
+    for path in candidates:
+        if path.exists():
+            return str(path)
+    return None
+
+
+def pct(count, total, ndigits=2):
+    return round(count / total * 100, ndigits) if total else 0.0
+
+
+def section_label(sec):
+    return PAPER_SECTION_LABELS.get(sec, sec)
+
+
+def token_records(lines):
+    """Return one record per evaluated token using current strict parser output."""
+    records = []
+    token_index = 1
+    for folio, fnum, text in lines:
+        sec = section_of(fnum)
+        if sec == "other":
+            continue
+        for raw in re.split(r"[.,]", text):
+            token = clean_word(raw)
+            if not token:
+                continue
+            prefix, root, suffix = parse(token, mode="strict")
+            strict = bool(prefix or root or suffix)
+            legacy = is_known(token, mode="legacy")
+            latin_value = ROOTS[root][0] if root else ""
+            interp = interpret(token, mode="strict") if strict else ""
+            records.append({
+                "token_index": token_index,
+                "folio": folio,
+                "section_key": sec,
+                "section": section_label(sec),
+                "eva_token": token,
+                "prefix": prefix or "",
+                "root": root or "",
+                "suffix": suffix or "",
+                "latin_value": latin_value,
+                "interpretation": interp or "",
+                "exploratory_recognized": "Yes" if legacy else "No",
+                "strict_parsed": "Yes" if strict else "No",
+                "failure_reason": "" if strict else "not_full_token_parse",
+            })
+            token_index += 1
+    return records
+
+
+def write_csv(path, fieldnames, rows):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def build_corpus_performance_rows(records):
+    total = len(records)
+    exploratory = sum(1 for r in records if r["exploratory_recognized"] == "Yes")
+    strict = sum(1 for r in records if r["strict_parsed"] == "Yes")
+    unresolved = total - strict
+    expected = (31007, 30590, 15848, 15159)
+    actual = (total, exploratory, strict, unresolved)
+    if actual != expected:
+        raise ValueError(f"Unexpected v22 corpus counts: got {actual}, expected {expected}")
+    return [
+        {"metric": "Total tokens", "count": total, "percentage": f"{pct(total, total):.2f}"},
+        {"metric": "Exploratory Recognition", "count": exploratory, "percentage": f"{pct(exploratory, total):.2f}"},
+        {"metric": "Strict Full-Token Validation", "count": strict, "percentage": f"{pct(strict, total):.2f}"},
+        {"metric": "Unresolved tokens", "count": unresolved, "percentage": f"{pct(unresolved, total):.2f}"},
+    ]
+
+
+def build_section_rows(records):
+    rows = []
+    by_section = defaultdict(list)
+    for rec in records:
+        by_section[rec["section_key"]].append(rec)
+    for sec in PAPER_SECTION_ORDER:
+        sec_records = by_section[sec]
+        total = len(sec_records)
+        strict = sum(1 for r in sec_records if r["strict_parsed"] == "Yes")
+        rows.append({
+            "section": section_label(sec),
+            "total_tokens": total,
+            "strict_parsed": strict,
+            "strict_percentage": f"{pct(strict, total):.2f}",
+        })
+    return rows
+
+
+def build_representative_rows(records):
+    representatives = []
+    used_tokens = set()
+    columns = ["folio", "section", "eva_token", "prefix", "root", "suffix",
+               "latin_value", "interpretation", "strict_parsed"]
+
+    for sec in PAPER_SECTION_ORDER:
+        candidates = [
+            r for r in records
+            if r["section_key"] == sec and r["strict_parsed"] == "Yes" and r["eva_token"] not in used_tokens
+        ]
+        candidates.sort(key=lambda r: (
+            -int(bool(r["prefix"]) + bool(r["suffix"])),
+            r["token_index"],
+        ))
+        for rec in candidates[:2]:
+            representatives.append({k: rec[k] for k in columns})
+            used_tokens.add(rec["eva_token"])
+
+    return representatives[:15]
+
+
+def build_lexical_stability_rows(records):
+    root_counts = Counter()
+    root_sections = defaultdict(set)
+    for rec in records:
+        root = rec["root"]
+        if not root:
+            continue
+        root_counts[root] += 1
+        root_sections[root].add(rec["section"])
+
+    rows = []
+    for root in sorted(root_counts, key=lambda r: (-root_counts[r], r)):
+        sections = sorted(root_sections[root])
+        rows.append({
+            "root": root,
+            "latin_value": ROOTS[root][0],
+            "interpretation": ROOTS[root][2],
+            "occurrence_count": root_counts[root],
+            "section_count": len(sections),
+            "sections": "; ".join(sections),
+            "context_specific_reassignment": "No",
+        })
+    return rows
+
+
+def build_failure_rows(records, unique_only=False):
+    rows = []
+    seen = set()
+    for rec in records:
+        if rec["strict_parsed"] == "Yes":
+            continue
+        key = rec["eva_token"]
+        if unique_only and key in seen:
+            continue
+        seen.add(key)
+        rows.append({
+            "folio": rec["folio"],
+            "section": rec["section"],
+            "eva_token": rec["eva_token"],
+            "failure_reason": rec["failure_reason"],
+        })
+    return rows
+
+
+def build_permutation_rows(all_words, n_trials=10000):
+    observed, null_dist, z, p = permutation_test(all_words, n_trials=n_trials, mode="strict")
+    mu = sum(null_dist) / len(null_dist)
+    std = (sum((x - mu) ** 2 for x in null_dist) / len(null_dist)) ** 0.5
+    trials_ge = sum(1 for x in null_dist if x >= observed)
+    empirical = "<0.0001" if trials_ge == 0 and n_trials == 10000 else f"{p:.6f}"
+    return [
+        {"metric": "Permutation trials", "value": str(n_trials)},
+        {"metric": "Null mean (%)", "value": f"{mu * 100:.3f}"},
+        {"metric": "Null standard deviation (%p)", "value": f"{std * 100:.3f}"},
+        {"metric": "Maximum null performance (%)", "value": f"{max(null_dist) * 100:.3f}"},
+        {"metric": "Observed strict parsing (%)", "value": f"{observed * 100:.2f}"},
+        {"metric": "z-score", "value": f"{z:.2f}σ"},
+        {"metric": "Trials >= observed", "value": f"{trials_ge} / {n_trials}"},
+        {"metric": "Empirical p-value", "value": empirical},
+    ], {
+        "trials": n_trials,
+        "null_mean_percent": round(mu * 100, 3),
+        "null_std_percentage_points": round(std * 100, 3),
+        "null_max_percent": round(max(null_dist) * 100, 3),
+        "observed_percent": round(observed * 100, 2),
+        "z_score": round(z, 2),
+        "trials_greater_equal_observed": trials_ge,
+        "empirical_p": empirical,
+    }
+
+
+def export_paper_data(input_path):
+    """Generate reproducible paper tables and supplementary data."""
+    lines = load_corpus(input_path)
+    records = token_records(lines)
+    all_words = [r["eva_token"] for r in records]
+    tables_dir = Path("paper/tables")
+    supp_dir = Path("paper/supplementary")
+
+    corpus_rows = build_corpus_performance_rows(records)
+    section_rows = build_section_rows(records)
+    permutation_rows, permutation_json = build_permutation_rows(all_words, n_trials=10000)
+    representative_rows = build_representative_rows(records)
+    lexical_rows = build_lexical_stability_rows(records)
+    failure_rows_unique = build_failure_rows(records, unique_only=True)
+    failure_rows_all = build_failure_rows(records, unique_only=False)
+
+    write_csv(tables_dir / "Table1_CorpusPerformance.csv",
+              ["metric", "count", "percentage"], corpus_rows)
+    write_csv(tables_dir / "Table2_SectionConsistency.csv",
+              ["section", "total_tokens", "strict_parsed", "strict_percentage"], section_rows)
+    write_csv(tables_dir / "Table3_PermutationStatistics.csv",
+              ["metric", "value"], permutation_rows)
+    write_csv(tables_dir / "Table4_RepresentativeParsing.csv",
+              ["folio", "section", "eva_token", "prefix", "root", "suffix",
+               "latin_value", "interpretation", "strict_parsed"], representative_rows)
+    write_csv(tables_dir / "Table5_LexicalStability.csv",
+              ["root", "latin_value", "interpretation", "occurrence_count",
+               "section_count", "sections", "context_specific_reassignment"], lexical_rows[:15])
+    write_csv(tables_dir / "Table6_FailureCases.csv",
+              ["folio", "section", "eva_token", "failure_reason"], failure_rows_unique[:25])
+
+    write_csv(supp_dir / "Supplementary_S1_SectionStatistics.csv",
+              ["section", "total_tokens", "strict_parsed", "strict_percentage"], section_rows)
+    write_csv(supp_dir / "Supplementary_S2_FullParserOutput.csv",
+              ["token_index", "folio", "section", "eva_token", "prefix", "root", "suffix",
+               "latin_value", "interpretation", "exploratory_recognized",
+               "strict_parsed", "failure_reason"], [
+                  {k: r[k] for k in ["token_index", "folio", "section", "eva_token", "prefix",
+                                      "root", "suffix", "latin_value", "interpretation",
+                                      "exploratory_recognized", "strict_parsed", "failure_reason"]}
+                  for r in records
+              ])
+    write_csv(supp_dir / "Supplementary_S3_LexicalStability.csv",
+              ["root", "latin_value", "interpretation", "occurrence_count",
+               "section_count", "sections", "context_specific_reassignment"], lexical_rows)
+    write_csv(supp_dir / "Supplementary_S4_FailureCases.csv",
+              ["folio", "section", "eva_token", "failure_reason"], failure_rows_all)
+
+    results = {
+        "parser_version": "v22",
+        "total_tokens": len(records),
+        "exploratory_recognition": {
+            "count": int(corpus_rows[1]["count"]),
+            "percentage": float(corpus_rows[1]["percentage"]),
+        },
+        "strict_full_token_validation": {
+            "count": int(corpus_rows[2]["count"]),
+            "percentage": float(corpus_rows[2]["percentage"]),
+        },
+        "permutation_test": permutation_json,
+        "section_statistics": [
+            {
+                "section": r["section"],
+                "total_tokens": r["total_tokens"],
+                "strict_parsed": r["strict_parsed"],
+                "strict_percentage": float(r["strict_percentage"]),
+            }
+            for r in section_rows
+        ],
+    }
+    supp_dir.mkdir(parents=True, exist_ok=True)
+    with open(supp_dir / "results.json", "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+
+    with open(supp_dir / "README.md", "w", encoding="utf-8") as f:
+        f.write("""# Supplementary Parser Outputs
+
+Generated by:
+
+```bash
+python src/analyze.py --export-paper-data
+```
+
+Files:
+
+- `Supplementary_S1_SectionStatistics.csv`: strict parsing counts by manuscript section.
+- `Supplementary_S2_FullParserOutput.csv`: token-level strict and exploratory parser output for all evaluated tokens.
+- `Supplementary_S3_LexicalStability.csv`: fixed lexical values and section reuse for each parsed root.
+- `Supplementary_S4_FailureCases.csv`: all tokens unresolved by strict full-token validation.
+- `results.json`: machine-readable summary of v22 corpus and strict permutation results.
+""")
+
+    print("Exported paper data:")
+    for path in [
+        tables_dir / "Table1_CorpusPerformance.csv",
+        tables_dir / "Table2_SectionConsistency.csv",
+        tables_dir / "Table3_PermutationStatistics.csv",
+        tables_dir / "Table4_RepresentativeParsing.csv",
+        tables_dir / "Table5_LexicalStability.csv",
+        tables_dir / "Table6_FailureCases.csv",
+        supp_dir / "Supplementary_S1_SectionStatistics.csv",
+        supp_dir / "Supplementary_S2_FullParserOutput.csv",
+        supp_dir / "Supplementary_S3_LexicalStability.csv",
+        supp_dir / "Supplementary_S4_FailureCases.csv",
+        supp_dir / "results.json",
+        supp_dir / "README.md",
+    ]:
+        print(f"  {path}")
+
+
 def translate_folio(lines, target_folio, mode="strict"):
     """Print word-by-word translation for a single folio."""
     folio_lines = [(fo, fn, tx) for fo, fn, tx in lines if fo.startswith(target_folio)]
@@ -207,7 +531,7 @@ def translate_folio(lines, target_folio, mode="strict"):
 
 def main():
     ap = argparse.ArgumentParser(description="Voynich v21 corpus analyzer")
-    ap.add_argument("--input", required=True, help="Path to ZL_ivtff_2b.txt")
+    ap.add_argument("--input", help="Path to ZL_ivtff_2b.txt")
     ap.add_argument("--folio", help="Translate a single folio (e.g. f112r)")
     ap.add_argument("--permutation", type=int, metavar="N",
                     help="Run permutation test with N trials (e.g. 1000)")
@@ -216,7 +540,19 @@ def main():
                     help="strict consumes the full word; legacy reproduces substring fallback")
     ap.add_argument("--compare-modes", action="store_true",
                     help="print strict and legacy rates side by side")
+    ap.add_argument("--export-paper-data", action="store_true",
+                    help="export reproducible paper tables and supplementary data")
     args = ap.parse_args()
+
+    if args.export_paper_data:
+        input_path = args.input or find_default_corpus_path()
+        if not input_path:
+            ap.error("--export-paper-data requires --input or a local ZL_ivtff_2b.txt file")
+        export_paper_data(input_path)
+        return
+
+    if not args.input:
+        ap.error("--input is required unless --export-paper-data is used")
 
     print(f"Loading corpus: {args.input}")
     lines = load_corpus(args.input)

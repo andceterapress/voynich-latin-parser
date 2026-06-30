@@ -1,0 +1,9 @@
+metric,value
+Permutation trials,10000
+Null mean (%),2.112
+Null standard deviation (%p),1.629
+Maximum null performance (%),15.900
+Observed strict parsing (%),51.11
+z-score,30.07σ
+Trials >= observed,0 / 10000
+Empirical p-value,<0.0001
