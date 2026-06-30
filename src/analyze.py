@@ -88,48 +88,67 @@ def section_stats(lines, mode="strict"):
     return stats
 
 
-def root_rate_with_mode(all_words, root_set, mode="strict"):
+def is_strictly_parsed(token, roots, prefixes=PREFIXES, suffixes=SUFFIXES):
+    """
+    Return True only when the full EVA token is consumed by strict grammar.
+
+    This mirrors parser.parse(..., mode="strict") for arbitrary root sets:
+      1. exact token in roots
+      2. optional one-prefix stripping using parser prefix priority
+      3. optional one-suffix stripping using parser suffix priority
+      4. remaining stem must be in roots
+
+    No partial substring match is allowed.
+    """
+    if token in roots:
+        return True
+
+    stem = token
+    for pfx in prefixes:
+        if stem.startswith(pfx) and len(stem) > len(pfx):
+            stem = stem[len(pfx):]
+            break
+
+    for sfx in suffixes:
+        if stem.endswith(sfx) and len(stem) > len(sfx):
+            candidate = stem[: -len(sfx)]
+            if candidate in roots:
+                return True
+
+    return stem in roots
+
+
+def is_legacy_recognized(token, roots, prefixes=PREFIXES, suffixes=SUFFIXES):
+    """Reproduce exploratory v21 recognition, including substring fallback."""
+    if is_strictly_parsed(token, roots, prefixes=prefixes, suffixes=suffixes):
+        return True
+
+    stem = token
+    for pfx in prefixes:
+        if stem.startswith(pfx) and len(stem) > len(pfx):
+            stem = stem[len(pfx):]
+            break
+
+    for length in range(min(8, len(stem)), 0, -1):
+        for start in range(len(stem) - length + 1):
+            if stem[start:start+length] in roots:
+                return True
+    return False
+
+
+def root_rate_with_mode(words_or_counts, root_set, mode="strict"):
     """Interpret words with a supplied root set under strict or legacy rules."""
-    hits = 0
-    for w in all_words:
-        if w in root_set:
-            hits += 1
-            continue
+    word_counts = words_or_counts if isinstance(words_or_counts, Counter) else Counter(words_or_counts)
 
-        found = False
-        stems = [w]
-        for p in PREFIXES:
-            if w.startswith(p) and len(w) > len(p):
-                stems.append(w[len(p):])
-                break
+    if mode == "strict":
+        hits = sum(count for w, count in word_counts.items() if is_strictly_parsed(w, root_set))
+    elif mode == "legacy":
+        hits = sum(count for w, count in word_counts.items() if is_legacy_recognized(w, root_set))
+    else:
+        raise ValueError("mode must be 'strict' or 'legacy'")
 
-        for stem in stems:
-            if stem in root_set:
-                found = True
-                break
-            for sfx in SUFFIXES:
-                if stem.endswith(sfx) and len(stem) > len(sfx) and stem[:-len(sfx)] in root_set:
-                    found = True
-                    break
-            if found:
-                break
-
-        if found:
-            hits += 1
-            continue
-
-        if mode == "legacy":
-            for length in range(min(8, len(w)), 0, -1):
-                for start in range(len(w) - length + 1):
-                    if w[start:start+length] in root_set:
-                        found = True
-                        break
-                if found:
-                    break
-            if found:
-                hits += 1
-
-    return hits / len(all_words)
+    total = sum(word_counts.values())
+    return hits / total if total else 0.0
 
 
 def permutation_test(all_words, n_trials=1000, seed=42, mode="strict"):
@@ -140,15 +159,16 @@ def permutation_test(all_words, n_trials=1000, seed=42, mode="strict"):
       (v21_rate, null_distribution, z_score, p_value)
     """
     random.seed(seed)
-    vocab = list(set(all_words))
+    word_counts = Counter(all_words)
+    vocab = list(word_counts)
     n_roots = len(ROOTS)
 
-    v21_rate = root_rate_with_mode(all_words, set(ROOTS.keys()), mode=mode)
+    v21_rate = root_rate_with_mode(word_counts, set(ROOTS.keys()), mode=mode)
 
     null_dist = []
     for _ in range(n_trials):
         rand_roots = set(random.sample(vocab, min(n_roots, len(vocab))))
-        null_dist.append(root_rate_with_mode(all_words, rand_roots, mode=mode))
+        null_dist.append(root_rate_with_mode(word_counts, rand_roots, mode=mode))
 
     null_dist.sort()
     mu  = sum(null_dist) / len(null_dist)
@@ -237,13 +257,16 @@ def main():
         v21_rate, null_dist, z, p = permutation_test(all_words, args.permutation, mode=args.mode)
         mu  = sum(null_dist) / len(null_dist)
         std = (sum((x-mu)**2 for x in null_dist)/len(null_dist))**0.5
-        print(f"\n  v21 rate:       {v21_rate*100:.3f}%")
-        print(f"  Null mean:      {mu*100:.3f}%")
-        print(f"  Null std:       {std*100:.3f}%p")
-        print(f"  z-score:        {z:.2f}σ")
-        print(f"  p-value:        {p:.6f}")
-        print(f"  Trials ≥ v21:   {sum(1 for s in null_dist if s>=v21_rate)}/{args.permutation}")
-        verdict = "SIGNIFICANT (p < 0.001)" if p < 0.001 else f"p = {p:.4f}"
+        trials_ge = sum(1 for s in null_dist if s >= v21_rate)
+        empirical = f"< {1/args.permutation:.6f}" if trials_ge == 0 else f"{p:.6f}"
+        print(f"\n  Observed {args.mode} rate: {v21_rate*100:.3f}%")
+        print(f"  Null mean:           {mu*100:.3f}%")
+        print(f"  Null std:            {std*100:.3f}%p")
+        print(f"  Null max:            {max(null_dist)*100:.3f}%")
+        print(f"  z-score:             {z:.2f}σ")
+        print(f"  empirical p:         {empirical}")
+        print(f"  Trials ≥ observed:   {trials_ge}/{args.permutation}")
+        verdict = "SIGNIFICANT" if p < 0.001 else f"p = {p:.4f}"
         print(f"  Verdict:        {verdict}")
 
 
