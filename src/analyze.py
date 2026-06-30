@@ -395,6 +395,80 @@ def build_permutation_rows(all_words, n_trials=10000):
     }
 
 
+def strict_count_with_roots(words, roots):
+    """Count strict full-token parses with a supplied temporary root inventory."""
+    return sum(1 for word in words if is_strictly_parsed(word, roots))
+
+
+def one_char_root_ablation(input_path):
+    """Run diagnostic ablation removing one-character ROOT entries only."""
+    lines = load_corpus(input_path)
+    all_words = list(corpus_words(lines))
+    total = len(all_words)
+    baseline_count = strict_count_with_roots(all_words, set(ROOTS.keys()))
+
+    removed_roots = sorted(root for root in ROOTS if len(root) == 1)
+    ablated_roots = {root for root in ROOTS if len(root) != 1}
+    ablated_count = strict_count_with_roots(all_words, ablated_roots)
+
+    baseline_pct = pct(baseline_count, total)
+    ablated_pct = pct(ablated_count, total)
+    absolute_drop = round(baseline_pct - ablated_pct, 2)
+    relative_drop = round((baseline_count - ablated_count) / baseline_count * 100, 2) if baseline_count else 0.0
+
+    expected = (31007, 15848, 51.11)
+    actual = (total, baseline_count, baseline_pct)
+    if actual != expected:
+        raise ValueError(f"Unexpected baseline strict result: got {actual}, expected {expected}")
+
+    rows = [
+        {"metric": "Total tokens", "value": str(total)},
+        {"metric": "Baseline strict parsed", "value": str(baseline_count)},
+        {"metric": "Baseline strict percentage", "value": f"{baseline_pct:.2f}"},
+        {"metric": "Ablated strict parsed", "value": str(ablated_count)},
+        {"metric": "Ablated strict percentage", "value": f"{ablated_pct:.2f}"},
+        {"metric": "Absolute percentage-point drop", "value": f"{absolute_drop:.2f}"},
+        {"metric": "Relative drop (%)", "value": f"{relative_drop:.2f}"},
+        {"metric": "Removed one-character roots", "value": "; ".join(removed_roots)},
+    ]
+
+    tables_dir = Path("paper/tables")
+    supp_dir = Path("paper/supplementary")
+    write_csv(tables_dir / "Table7_OneCharacterRootAblation.csv", ["metric", "value"], rows)
+
+    supp_dir.mkdir(parents=True, exist_ok=True)
+    result = {
+        "parser_version": "v22",
+        "ablation": "one_character_roots_removed",
+        "total_tokens": total,
+        "baseline": {
+            "strict_count": baseline_count,
+            "strict_percentage": baseline_pct,
+        },
+        "ablated": {
+            "strict_count": ablated_count,
+            "strict_percentage": ablated_pct,
+        },
+        "absolute_percentage_point_drop": absolute_drop,
+        "relative_drop_percent": relative_drop,
+        "removed_one_character_roots": removed_roots,
+    }
+    with open(supp_dir / "Supplementary_S5_OneCharacterRootAblation.json", "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+
+    print("One-character ROOT ablation")
+    print(f"  total_tokens: {total}")
+    print(f"  baseline_strict_count: {baseline_count}")
+    print(f"  baseline_strict_percentage: {baseline_pct:.2f}%")
+    print(f"  ablated_strict_count: {ablated_count}")
+    print(f"  ablated_strict_percentage: {ablated_pct:.2f}%")
+    print(f"  absolute_percentage_point_drop: {absolute_drop:.2f}")
+    print(f"  relative_drop_percent: {relative_drop:.2f}%")
+    print(f"  removed_one_char_roots: {', '.join(removed_roots)}")
+    print("  wrote: paper/tables/Table7_OneCharacterRootAblation.csv")
+    print("  wrote: paper/supplementary/Supplementary_S5_OneCharacterRootAblation.json")
+
+
 def export_paper_data(input_path):
     """Generate reproducible paper tables and supplementary data."""
     lines = load_corpus(input_path)
@@ -544,7 +618,16 @@ def main():
                     help="print strict and legacy rates side by side")
     ap.add_argument("--export-paper-data", action="store_true",
                     help="export reproducible paper tables and supplementary data")
+    ap.add_argument("--ablate-one-char-roots", action="store_true",
+                    help="diagnose strict coverage after temporarily removing one-character ROOT entries")
     args = ap.parse_args()
+
+    if args.ablate_one_char_roots:
+        input_path = args.input or find_default_corpus_path()
+        if not input_path:
+            ap.error("--ablate-one-char-roots requires --input or a local ZL_ivtff_2b.txt file")
+        one_char_root_ablation(input_path)
+        return
 
     if args.export_paper_data:
         input_path = args.input or find_default_corpus_path()
@@ -554,7 +637,7 @@ def main():
         return
 
     if not args.input:
-        ap.error("--input is required unless --export-paper-data is used")
+        ap.error("--input is required unless --export-paper-data or --ablate-one-char-roots is used")
 
     print(f"Loading corpus: {args.input}")
     lines = load_corpus(args.input)
