@@ -335,9 +335,11 @@ def build_lexical_stability_rows(records):
     rows = []
     for root in sorted(root_counts, key=lambda r: (-root_counts[r], r)):
         sections = sorted(root_sections[root])
+        latin_value = ROOTS[root][0]
         rows.append({
-            "root": root,
-            "latin_value": ROOTS[root][0],
+            "lexical_family": latin_value,
+            "variant": root,
+            "latin_value": latin_value,
             "interpretation": ROOTS[root][2],
             "occurrence_count": root_counts[root],
             "section_count": len(sections),
@@ -419,7 +421,7 @@ def export_paper_data(input_path):
               ["folio", "section", "eva_token", "prefix", "root", "suffix",
                "latin_value", "interpretation", "strict_parsed"], representative_rows)
     write_csv(tables_dir / "Table5_LexicalStability.csv",
-              ["root", "latin_value", "interpretation", "occurrence_count",
+              ["lexical_family", "variant", "latin_value", "interpretation", "occurrence_count",
                "section_count", "sections", "context_specific_reassignment"], lexical_rows[:15])
     write_csv(tables_dir / "Table6_FailureCases.csv",
               ["folio", "section", "eva_token", "failure_reason"], failure_rows_unique[:25])
@@ -436,7 +438,7 @@ def export_paper_data(input_path):
                   for r in records
               ])
     write_csv(supp_dir / "Supplementary_S3_LexicalStability.csv",
-              ["root", "latin_value", "interpretation", "occurrence_count",
+              ["lexical_family", "variant", "latin_value", "interpretation", "occurrence_count",
                "section_count", "sections", "context_specific_reassignment"], lexical_rows)
     write_csv(supp_dir / "Supplementary_S4_FailureCases.csv",
               ["folio", "section", "eva_token", "failure_reason"], failure_rows_all)
