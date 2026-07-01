@@ -1,12 +1,12 @@
 """
-test_parser.py — Unit tests for the v21 Voynich parser
+test_parser.py - Unit tests for the v22 Voynich parser
 =======================================================
 Run:  python -m pytest tests/test_parser.py -v
   or: python tests/test_parser.py
 """
 
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "parser"))
 
 from parser import clean_word, parse, interpret, is_known, ROOTS
 
@@ -50,11 +50,11 @@ TESTS = [
     ("aiin",    "aiin",   None,  None,  True),
     ("ar",      "ar",     None,  None,  True),
 
-    # v21 bug fixes
-    ("air",     "air",    None,  None,  True),   # was failing before v21
-    ("aiir",    "aiir",   None,  None,  True),   # was failing before v21
+    # retained direct-root checks
+    ("air",     "air",    None,  None,  True),
+    ("aiir",    "aiir",   None,  None,  True),
 
-    # v21 single-char function words
+    # single-character function words
     ("o",       "o",      None,  None,  True),
     ("l",       "l",      None,  None,  True),
     ("r",       "r",      None,  None,  True),
@@ -181,7 +181,7 @@ def test_marci_direct_correspondences():
     """
     # Note: 'e' alone is not in ROOTS (ee = et/eius is)
     # Note: 'y' alone parses as unknown (it is a suffix/prefix marker, not standalone root)
-    # Marci's direct correspondences that are standalone roots in v21:
+    # Marci's direct correspondences that are standalone roots:
     direct = ["d", "k", "l", "r", "s", "t"]
     for glyph in direct:
         assert is_known(glyph), f"Marci-direct glyph '{glyph}' should be known"
@@ -189,7 +189,7 @@ def test_marci_direct_correspondences():
 
 
 if __name__ == "__main__":
-    print("Voynich v21 Parser — Unit Tests\n")
+    print("Voynich v22 Parser - Unit Tests\n")
     ok = run_tests()
     print()
     test_legacy_substring_fallback()

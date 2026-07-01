@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: "A Reproducible Computational Framework for Corpus-Wide Morphological Evaluation of the Voynich Manuscript"
+message: "If you use this repository, please cite the Zenodo DOI associated with the v22-paper release."
+type: software
+authors:
+  - family-names: Kim
+    given-names: Uk
+version: "v22-paper"
+date-released: "2026-07-01"
+repository-code: "https://github.com/andceterapress/voynich-latin-parser"
+doi: "REPLACE_WITH_ZENODO_DOI_AFTER_RELEASE"
+license: "MIT"
