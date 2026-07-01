@@ -2,9 +2,9 @@
 analyze.py — Corpus-level analysis of the Voynich Manuscript
 =============================================================
 Usage:
-  python analyze.py --input path/to/ZL_ivtff_2b.txt
-  python analyze.py --input path/to/ZL_ivtff_2b.txt --folio f112r
-  python analyze.py --input path/to/ZL_ivtff_2b.txt --permutation 1000
+  python parser/analyze.py --input path/to/ZL_ivtff_2b.txt
+  python parser/analyze.py --input path/to/ZL_ivtff_2b.txt --folio f112r
+  python parser/analyze.py --input path/to/ZL_ivtff_2b.txt --permutation 1000
 """
 
 import re
@@ -174,17 +174,17 @@ def root_rate_with_mode(words_or_counts, root_set, mode="strict"):
 
 def permutation_test(all_words, n_trials=1000, seed=42, mode="strict"):
     """
-    Compare v21 interpretation rate against random root sets of the same size.
+    Compare v22 interpretation rate against random root sets of the same size.
 
     Returns:
-      (v21_rate, null_distribution, z_score, p_value)
+      (observed_rate, null_distribution, z_score, p_value)
     """
     random.seed(seed)
     word_counts = Counter(all_words)
     vocab = list(word_counts)
     n_roots = len(ROOTS)
 
-    v21_rate = root_rate_with_mode(word_counts, set(ROOTS.keys()), mode=mode)
+    observed_rate = root_rate_with_mode(word_counts, set(ROOTS.keys()), mode=mode)
 
     null_dist = []
     for _ in range(n_trials):
@@ -194,10 +194,10 @@ def permutation_test(all_words, n_trials=1000, seed=42, mode="strict"):
     null_dist.sort()
     mu  = sum(null_dist) / len(null_dist)
     std = (sum((x - mu) ** 2 for x in null_dist) / len(null_dist)) ** 0.5
-    z   = (v21_rate - mu) / std if std > 0 else float("inf")
-    p   = sum(1 for s in null_dist if s >= v21_rate) / len(null_dist)
+    z   = (observed_rate - mu) / std if std > 0 else float("inf")
+    p   = sum(1 for s in null_dist if s >= observed_rate) / len(null_dist)
 
-    return v21_rate, null_dist, z, p
+    return observed_rate, null_dist, z, p
 
 
 def find_default_corpus_path():
@@ -432,8 +432,8 @@ def one_char_root_ablation(input_path):
         {"metric": "Removed one-character roots", "value": "; ".join(removed_roots)},
     ]
 
-    tables_dir = Path("paper/tables")
-    supp_dir = Path("paper/supplementary")
+    tables_dir = Path("results/tables")
+    supp_dir = Path("supplementary")
     write_csv(tables_dir / "Table7_OneCharacterRootAblation.csv", ["metric", "value"], rows)
 
     supp_dir.mkdir(parents=True, exist_ok=True)
@@ -465,8 +465,8 @@ def one_char_root_ablation(input_path):
     print(f"  absolute_percentage_point_drop: {absolute_drop:.2f}")
     print(f"  relative_drop_percent: {relative_drop:.2f}%")
     print(f"  removed_one_char_roots: {', '.join(removed_roots)}")
-    print("  wrote: paper/tables/Table7_OneCharacterRootAblation.csv")
-    print("  wrote: paper/supplementary/Supplementary_S5_OneCharacterRootAblation.json")
+    print("  wrote: results/tables/Table7_OneCharacterRootAblation.csv")
+    print("  wrote: supplementary/Supplementary_S5_OneCharacterRootAblation.json")
 
 
 def short_root_ablation(input_path):
@@ -510,8 +510,8 @@ def short_root_ablation(input_path):
         {"metric": "Removed two-character roots", "value": "; ".join(removed_two_char)},
     ]
 
-    tables_dir = Path("paper/tables")
-    supp_dir = Path("paper/supplementary")
+    tables_dir = Path("results/tables")
+    supp_dir = Path("supplementary")
     write_csv(tables_dir / "Table8_ShortRootAblation.csv", ["metric", "value"], rows)
 
     supp_dir.mkdir(parents=True, exist_ok=True)
@@ -550,8 +550,8 @@ def short_root_ablation(input_path):
     print(f"  relative_drop_vs_baseline: {relative_drop:.2f}%")
     print(f"  removed_one_char_roots: {', '.join(removed_one_char)}")
     print(f"  removed_two_char_roots: {', '.join(removed_two_char)}")
-    print("  wrote: paper/tables/Table8_ShortRootAblation.csv")
-    print("  wrote: paper/supplementary/Supplementary_S6_ShortRootAblation.json")
+    print("  wrote: results/tables/Table8_ShortRootAblation.csv")
+    print("  wrote: supplementary/Supplementary_S6_ShortRootAblation.json")
 
 
 def export_paper_data(input_path):
@@ -559,8 +559,8 @@ def export_paper_data(input_path):
     lines = load_corpus(input_path)
     records = token_records(lines)
     all_words = [r["eva_token"] for r in records]
-    tables_dir = Path("paper/tables")
-    supp_dir = Path("paper/supplementary")
+    tables_dir = Path("results/tables")
+    supp_dir = Path("supplementary")
 
     corpus_rows = build_corpus_performance_rows(records)
     section_rows = build_section_rows(records)
@@ -585,9 +585,9 @@ def export_paper_data(input_path):
     write_csv(tables_dir / "Table6_FailureCases.csv",
               ["folio", "section", "eva_token", "failure_reason"], failure_rows_unique[:25])
 
-    write_csv(supp_dir / "Supplementary_S1_SectionStatistics.csv",
+    write_csv(supp_dir / "Supplementary_Table_S1_Section_Statistics.csv",
               ["section", "total_tokens", "strict_parsed", "strict_percentage"], section_rows)
-    write_csv(supp_dir / "Supplementary_S2_FullParserOutput.csv",
+    write_csv(supp_dir / "Supplementary_Table_S2_Full_Parser_Output.csv",
               ["token_index", "folio", "section", "eva_token", "prefix", "root", "suffix",
                "latin_value", "interpretation", "exploratory_recognized",
                "strict_parsed", "failure_reason"], [
@@ -596,10 +596,10 @@ def export_paper_data(input_path):
                                       "exploratory_recognized", "strict_parsed", "failure_reason"]}
                   for r in records
               ])
-    write_csv(supp_dir / "Supplementary_S3_LexicalStability.csv",
+    write_csv(supp_dir / "Supplementary_Table_S3_Lexical_Stability.csv",
               ["lexical_family", "variant", "latin_value", "interpretation", "occurrence_count",
                "section_count", "sections", "context_specific_reassignment"], lexical_rows)
-    write_csv(supp_dir / "Supplementary_S4_FailureCases.csv",
+    write_csv(supp_dir / "Supplementary_Table_S4_Failure_Cases.csv",
               ["folio", "section", "eva_token", "failure_reason"], failure_rows_all)
 
     results = {
@@ -625,7 +625,9 @@ def export_paper_data(input_path):
         ],
     }
     supp_dir.mkdir(parents=True, exist_ok=True)
-    with open(supp_dir / "results.json", "w", encoding="utf-8") as f:
+    results_dir = Path("results")
+    results_dir.mkdir(parents=True, exist_ok=True)
+    with open(results_dir / "results.json", "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
 
     with open(supp_dir / "README.md", "w", encoding="utf-8") as f:
@@ -634,16 +636,16 @@ def export_paper_data(input_path):
 Generated by:
 
 ```bash
-python src/analyze.py --export-paper-data
+python parser/analyze.py --export-paper-data
 ```
 
 Files:
 
-- `Supplementary_S1_SectionStatistics.csv`: strict parsing counts by manuscript section.
-- `Supplementary_S2_FullParserOutput.csv`: token-level strict and exploratory parser output for all evaluated tokens.
-- `Supplementary_S3_LexicalStability.csv`: fixed lexical values and section reuse for each parsed root.
-- `Supplementary_S4_FailureCases.csv`: all tokens unresolved by strict full-token validation.
-- `results.json`: machine-readable summary of v22 corpus and strict permutation results.
+- `Supplementary_Table_S1_Section_Statistics.csv`: strict parsing counts by manuscript section.
+- `Supplementary_Table_S2_Full_Parser_Output.csv`: token-level strict and exploratory parser output for all evaluated tokens.
+- `Supplementary_Table_S3_Lexical_Stability.csv`: fixed lexical values and section reuse for each parsed root.
+- `Supplementary_Table_S4_Failure_Cases.csv`: all tokens unresolved by strict full-token validation.
+- `results/results.json`: machine-readable summary of v22 corpus and strict permutation results.
 """)
 
     print("Exported paper data:")
@@ -654,11 +656,11 @@ Files:
         tables_dir / "Table4_RepresentativeParsing.csv",
         tables_dir / "Table5_LexicalStability.csv",
         tables_dir / "Table6_FailureCases.csv",
-        supp_dir / "Supplementary_S1_SectionStatistics.csv",
-        supp_dir / "Supplementary_S2_FullParserOutput.csv",
-        supp_dir / "Supplementary_S3_LexicalStability.csv",
-        supp_dir / "Supplementary_S4_FailureCases.csv",
-        supp_dir / "results.json",
+        supp_dir / "Supplementary_Table_S1_Section_Statistics.csv",
+        supp_dir / "Supplementary_Table_S2_Full_Parser_Output.csv",
+        supp_dir / "Supplementary_Table_S3_Lexical_Stability.csv",
+        supp_dir / "Supplementary_Table_S4_Failure_Cases.csv",
+        results_dir / "results.json",
         supp_dir / "README.md",
     ]:
         print(f"  {path}")
@@ -672,7 +674,7 @@ def translate_folio(lines, target_folio, mode="strict"):
         return
 
     print(f"\n{'='*65}")
-    print(f"  {target_folio} — v21 translation")
+    print(f"  {target_folio} - v22 translation")
     print(f"{'='*65}")
 
     for folio, fnum, text in folio_lines:
@@ -691,7 +693,7 @@ def translate_folio(lines, target_folio, mode="strict"):
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main():
-    ap = argparse.ArgumentParser(description="Voynich v21 corpus analyzer")
+    ap = argparse.ArgumentParser(description="Voynich v22 corpus analyzer")
     ap.add_argument("--input", help="Path to ZL_ivtff_2b.txt")
     ap.add_argument("--folio", help="Translate a single folio (e.g. f112r)")
     ap.add_argument("--permutation", type=int, metavar="N",
@@ -769,12 +771,12 @@ def main():
 
     if args.permutation:
         print(f"Running permutation test (n={args.permutation}, mode={args.mode})...")
-        v21_rate, null_dist, z, p = permutation_test(all_words, args.permutation, mode=args.mode)
+        observed_rate, null_dist, z, p = permutation_test(all_words, args.permutation, mode=args.mode)
         mu  = sum(null_dist) / len(null_dist)
         std = (sum((x-mu)**2 for x in null_dist)/len(null_dist))**0.5
-        trials_ge = sum(1 for s in null_dist if s >= v21_rate)
+        trials_ge = sum(1 for s in null_dist if s >= observed_rate)
         empirical = f"< {1/args.permutation:.6f}" if trials_ge == 0 else f"{p:.6f}"
-        print(f"\n  Observed {args.mode} rate: {v21_rate*100:.3f}%")
+        print(f"\n  Observed {args.mode} rate: {observed_rate*100:.3f}%")
         print(f"  Null mean:           {mu*100:.3f}%")
         print(f"  Null std:            {std*100:.3f}%p")
         print(f"  Null max:            {max(null_dist)*100:.3f}%")

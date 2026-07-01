@@ -1,20 +1,20 @@
 """
 translate_sample.py — Quick-start translation examples
 =======================================================
-Demonstrates the v21 parser on key benchmark lines from the manuscript.
+Demonstrates the v22 parser on key benchmark lines from the manuscript.
 No corpus file required.
 
 Run:  python examples/translate_sample.py
 """
 
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "parser"))
 
 from parser import interpret, is_known, clean_word
 
 BANNER = """
 ╔══════════════════════════════════════════════════════════════╗
-║  Voynich Manuscript — v21 Parser  Sample Translations       ║
+║  Voynich Manuscript - v22 Parser  Sample Translations       ║
 ║  Hypothesis: Latin botanical abbreviation system            ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -91,9 +91,9 @@ def main():
 
     print("─" * 65)
     print("For full corpus analysis, run:")
-    print("  python src/analyze.py --input ZL_ivtff_2b.txt")
-    print("  python src/analyze.py --input ZL_ivtff_2b.txt --folio f112r")
-    print("  python src/analyze.py --input ZL_ivtff_2b.txt --permutation 1000")
+    print("  python parser/analyze.py --input ZL_ivtff_2b.txt")
+    print("  python parser/analyze.py --input ZL_ivtff_2b.txt --folio f112r")
+    print("  python parser/analyze.py --input ZL_ivtff_2b.txt --permutation 1000")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """
-voynich_parser.py — Voynich Manuscript v21 Parser
+voynich_parser.py - Voynich Manuscript v22 Parser
 ==================================================
 Hypothesis: The Voynich Manuscript is a compressed Latin botanical-medical
 reference text from 14th–15th century North Italy (Padua region), encoding
@@ -9,8 +9,8 @@ suffixes.
 Data source: Zandbergen-Landini (ZL) transcription, ivtff_2b format (2022-12-25)
 Transcription system: EVA (Extended Voynich Alphabet)
 
-Interpretation rate: 98.7% (30,590 / 31,007 tokens across all sections)
-Permutation test: z = 7.3σ, p < 0.001 (n=1,000 random root sets)
+Strict Full-Token Validation rate: 51.11% (15,848 / 31,007 tokens)
+Exploratory Recognition rate: 98.66% (30,590 / 31,007 tokens)
 
 References:
   - Mondino dei Luzzi, Anathomia (1316)
@@ -24,7 +24,7 @@ License: MIT
 import re
 from typing import Optional, Tuple, Dict
 
-# ── v21 Root Dictionary ───────────────────────────────────────────────────────
+# v22 Root Dictionary
 # Format: EVA_string -> (Latin_source, Korean_gloss, English_gloss)
 
 ROOTS: Dict[str, Tuple[str, str, str]] = {
@@ -47,7 +47,7 @@ ROOTS: Dict[str, Tuple[str, str, str]] = {
     "aiin":   ("annulus",   "나이테",   "growth ring"),
     "ain":    ("annulus",   "나이테",   "growth ring"),
     "aiiin":  ("annulus",   "나이테강조","growth ring (emphatic)"),
-    "aiir":   ("annulus+radius","나이테+수선","ring+ray"),   # v21
+    "aiir":   ("annulus+radius","나이테+수선","ring+ray"),
     "ar":     ("radius",    "수선",     "medullary ray"),
     "sheol":  ("suber",     "코르크",   "cork/suber"),
     "shor":   ("suber",     "코르크",   "cork/suber"),
@@ -58,7 +58,7 @@ ROOTS: Dict[str, Tuple[str, str, str]] = {
     "okol":   ("exterior",  "외층",     "outer layer"),
     "ok":     ("exterior",  "외층",     "outer layer"),
     "ot":     ("exterior",  "표면",     "surface"),
-    "air":    ("aureus",    "황색",     "golden/yellow"),   # v21 bug fix
+    "air":    ("aureus",    "황색",     "golden/yellow"),
     "or":     ("aureus",    "황색",     "golden/yellow"),
     "od":     ("odor",      "향기",     "scent/odor"),
     "dor":    ("odor",      "향기",     "scent/odor"),
@@ -99,7 +99,7 @@ ROOTS: Dict[str, Tuple[str, str, str]] = {
     "oteo":   ("exterior (seasonal)", "외층(계절)",    "outer (seasonal)"),
     "okeo":   ("exterior (seasonal)", "외층(계절)",    "outer (seasonal)"),
     "okody":  ("exterior (directional)","외층방향",    "outer layer (directional)"),
-    # v21 new: single-character function words (Marci table + statistical basis)
+    # Single-character function words (Marci table + statistical basis)
     "o":      ("aut",       "또는",     "or/aut  [standalone only; prefix o- = exterior]"),
     "l":      ("il-",       "관사",     "article il- [standalone]"),
     "r":      ("re-",       "역",       "reverse/re- [standalone]"),

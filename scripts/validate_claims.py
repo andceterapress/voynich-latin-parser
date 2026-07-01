@@ -1,5 +1,5 @@
 """
-Validate high-level claims after freezing the v21 dictionary.
+Validate high-level claims after freezing the v22 dictionary.
 
 This script does not retrain the dictionary. It evaluates fixed parser rules on:
 
@@ -20,7 +20,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "parser"))
 
 from analyze import load_corpus, section_of  # noqa: E402
 from parser import ROOTS, clean_word, parse, is_known  # noqa: E402
@@ -208,7 +208,7 @@ def print_rankings(rankings):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Validate v21 claims after dictionary freeze")
+    ap = argparse.ArgumentParser(description="Validate v22 claims after dictionary freeze")
     ap.add_argument("--input", required=True, help="Path to ZL_ivtff_2b.txt")
     ap.add_argument("--mode", choices=("strict", "legacy"), default="strict")
     ap.add_argument("--holdout-seed", type=int, default=20260630)
